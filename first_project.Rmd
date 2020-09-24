@@ -1,0 +1,63 @@
+---
+title: "Project report"
+author: "Max Narvaez & Ryan Harvey"
+date: "9/24/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## Instructions
+
+The following document is a template of the report that will be due on Oct 1st at 9am, please change the information in lines 1-4 to have:
+
+* Your project title
+* The members of your group
+
+The report *should* be uploaded as a PDF or an HTML document through Moodle. If you submit your project as an .Rmd you will be deducted *20 points* from your project grade.
+
+Please delete the section *Instructions* from your final project
+
+## Article review
+
+In one or two paragraphs summarize the findings of the article that you will be reviewing/reproducing in your own words.
+
+## Description of your dataset
+
+Using a markdown table describe the variables from your dataset that you used for your analysis and whether they were in the original table or were obtained by transforming the original dataset. For variables that were not in the original dataset, briefly describe how you obtain them.
+
+## Main conclusions 
+
+Use well-written paragraphs and professional-looking tables and/or graphs to reproduce the main results of your article of interest. You should include at least the following points from each paper:
+
+* *Women's Jeans are inferior*:
+
+    * The size of women's front packet is smaller than men's front pockets. Also comment on the relationship of length and width across men and women's front pockets.
+    * The proportion of different objects (i.e. cell-phone, front wallet) that can fit in women's front pockets is smaller than in men.
+    * Even accounting for different styles (skinny and straigh), women's front pockets are smaller than men's.
+    * The relationship between size of back-pockets across men and women's
+    
+For the formulas for the size of the front and back pockets I expect to have reasonably accurate formulas that make use of the variables in your dataset (e.g min/max width and min/max height)     
+
+* *90's Music Cannon*:
+
+    * The percent of songs from the 90's recognized currently decays with time.
+    * A graph of the top-5 /bottom-5 songs as they are currently remembered
+    * A graph of the top-5 songs that were popular in the 90's but are rarely heard after that
+    * A graph/table describing the change in recognition across different generations.
+    
+* *Laughing out loud*:
+
+    * Evolution of different expression for laughing in the internet across time.
+    * Proportion of laughs-share by different category.
+    * The proportion of capitalization in different laughing expressions and its evolution through time.
+    
+## Original question
+
+Describe the question that you asked from the dataset and a visualization that describes the answer to such question. How do you interpret the dataset and how does it help answer your question.
+
+    
+    
