@@ -33,27 +33,12 @@ Using a markdown table describe the variables from your dataset that you used fo
 
 Use well-written paragraphs and professional-looking tables and/or graphs to reproduce the main results of your article of interest. You should include at least the following points from each paper:
 
-* *Women's Jeans are inferior*:
-
-    * The size of women's front packet is smaller than men's front pockets. Also comment on the relationship of length and width across men and women's front pockets.
-    * The proportion of different objects (i.e. cell-phone, front wallet) that can fit in women's front pockets is smaller than in men.
-    * Even accounting for different styles (skinny and straigh), women's front pockets are smaller than men's.
-    * The relationship between size of back-pockets across men and women's
-    
-For the formulas for the size of the front and back pockets I expect to have reasonably accurate formulas that make use of the variables in your dataset (e.g min/max width and min/max height)     
-
 * *90's Music Cannon*:
 
     * The percent of songs from the 90's recognized currently decays with time.
     * A graph of the top-5 /bottom-5 songs as they are currently remembered
     * A graph of the top-5 songs that were popular in the 90's but are rarely heard after that
     * A graph/table describing the change in recognition across different generations.
-    
-* *Laughing out loud*:
-
-    * Evolution of different expression for laughing in the internet across time.
-    * Proportion of laughs-share by different category.
-    * The proportion of capitalization in different laughing expressions and its evolution through time.
     
 ## Original question
 
