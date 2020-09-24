@@ -8,6 +8,8 @@ output: pdf_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+
+recognition.data <- read_csv("time_series_90s_d3_13_15_averaged_july_22.csv")
 ```
 
 ## Instructions
@@ -36,6 +38,11 @@ Use well-written paragraphs and professional-looking tables and/or graphs to rep
 * *90's Music Cannon*:
 
     * The percent of songs from the 90's recognized currently decays with time.
+```{r}
+ggplot(recognition.data) +
+    geom_line(aes(generation, recognition, color = artist_song)) +
+    theme(legend.position = "none")
+```
     * A graph of the top-5 /bottom-5 songs as they are currently remembered
     * A graph of the top-5 songs that were popular in the 90's but are rarely heard after that
     * A graph/table describing the change in recognition across different generations.
