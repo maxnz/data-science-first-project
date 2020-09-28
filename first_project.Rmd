@@ -11,6 +11,7 @@ library(tidyverse)
 
 recognition.data <- read_csv("time_series_90s_d3_13_15_averaged_july_22.csv")
 rec <- read_csv("time_series_90s_july13.csv")
+rec[rec == 0] <- NA
 ```
 
 ```{r helper, include=FALSE}
@@ -51,7 +52,7 @@ rec %>%
     pivot_longer(c(`-13`, `-12`, `-11`, `-10`, `-9`, `-8`, `-7`, `-6`, `-5`, `-4`, `-3`, `-2`, `-1`, `0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, `10`),
                  names_to = "generation", values_to = "recognition") %>%
     transmute(song = artist_song, generation = generation, recognition = recognition) %>%
-    filter(recognition > 0) %>%
+    filter(!is.na(recognition)) %>%
     ggplot() +
     geom_line(aes(x = as.numeric(generation), recognition, color = song)) +
     geom_smooth(aes(as.numeric(generation), recognition), color = "black") +
@@ -65,7 +66,7 @@ rec %>%
     pivot_longer(c(`-13`, `-12`, `-11`, `-10`, `-9`, `-8`, `-7`, `-6`, `-5`, `-4`, `-3`, `-2`, `-1`, `0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, `10`),
                  names_to = "generation", values_to = "recognition") %>%
     transmute(song = artist_song, generation = generation, recognition = recognition) %>%
-    filter(recognition > 0) %>%
+    filter(!is.na(recognition)) %>%
     ggplot() +
     geom_line(aes(x = as.numeric(generation), recognition, color = song)) +
     geom_smooth(aes(as.numeric(generation), recognition), color = "black") +
