@@ -44,6 +44,11 @@ ggplot(recognition.data) +
     geom_line(aes(generation, recognition, color = artist_song)) +
     theme(legend.position = "none")
 
+flip_sign <- function(l) {
+     l <- as.numeric(l)*(-1)
+     parse(text=l)
+}
+
 rec %>%
     filter(`-13` >= .9) %>%
     pivot_longer(c(`-13`, `-12`, `-11`, `-10`, `-9`, `-8`, `-7`, `-6`, `-5`, `-4`, `-3`, `-2`, `-1`, `0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, `10`),
@@ -52,7 +57,8 @@ rec %>%
     filter(recognition > 0) %>%
     ggplot() +
     geom_line(aes(x = as.numeric(generation), recognition, color = song)) +
-    scale_x_continuous(breaks = seq(-13, 10, by = 1)) +
+    geom_smooth(aes(as.numeric(generation), recognition), color = "black") +
+    scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
     theme(legend.position = "none") +
     labs(x = "Age in year that song was released",
          y = "% of people who know song")
