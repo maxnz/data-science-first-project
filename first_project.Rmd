@@ -13,6 +13,13 @@ recognition.data <- read_csv("time_series_90s_d3_13_15_averaged_july_22.csv")
 rec <- read_csv("time_series_90s_july13.csv")
 ```
 
+```{r helper, include=FALSE}
+flip_sign <- function(l) {
+     l <- as.numeric(l)*(-1)
+     parse(text=l)
+}
+```
+
 ## Instructions
 
 The following document is a template of the report that will be due on Oct 1st at 9am, please change the information in lines 1-4 to have:
@@ -40,14 +47,18 @@ Use well-written paragraphs and professional-looking tables and/or graphs to rep
 
     * The percent of songs from the 90's recognized currently decays with time.
 ```{r}
-ggplot(recognition.data) +
-    geom_line(aes(generation, recognition, color = artist_song)) +
-    theme(legend.position = "none")
-
-flip_sign <- function(l) {
-     l <- as.numeric(l)*(-1)
-     parse(text=l)
-}
+rec %>%
+    pivot_longer(c(`-13`, `-12`, `-11`, `-10`, `-9`, `-8`, `-7`, `-6`, `-5`, `-4`, `-3`, `-2`, `-1`, `0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, `10`),
+                 names_to = "generation", values_to = "recognition") %>%
+    transmute(song = artist_song, generation = generation, recognition = recognition) %>%
+    filter(recognition > 0) %>%
+    ggplot() +
+    geom_line(aes(x = as.numeric(generation), recognition, color = song)) +
+    geom_smooth(aes(as.numeric(generation), recognition), color = "black") +
+    scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
+    theme(legend.position = "none") +
+    labs(x = "Age in year that song was released",
+         y = "% of people who know song")
 
 rec %>%
     filter(`-13` >= .9) %>%
@@ -65,6 +76,21 @@ rec %>%
 ```
     * A graph of the top-5 /bottom-5 songs as they are currently remembered
     * A graph of the top-5 songs that were popular in the 90's but are rarely heard after that
+```{r}
+rec %>%
+    arrange(desc(`-13`)) %>%
+    head(5) %>%
+    pivot_longer(c(`-13`, `-12`, `-11`, `-10`, `-9`, `-8`, `-7`, `-6`, `-5`, `-4`, `-3`, `-2`, `-1`, `0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, `10`),
+                 names_to = "generation", values_to = "recognition") %>%
+    transmute(song = artist_song, generation = generation, recognition = recognition) %>%
+    filter(recognition > 0) %>%
+    ggplot() +
+    geom_line(aes(x = as.numeric(generation), recognition, color = song)) +
+    scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
+    theme(legend.position = "none") +
+    labs(x = "Age in year that song was released",
+         y = "% of people who know song")
+```
     * A graph/table describing the change in recognition across different generations.
     
 ## Original question
