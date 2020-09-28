@@ -11,6 +11,7 @@ library(tidyverse)
 
 recognition.data <- read_csv("time_series_90s_d3_13_15_averaged_july_22.csv")
 rec <- read_csv("time_series_90s_july13.csv")
+generation.rec.data <- read_csv("lollipop_chart_data_july_13.csv")
 rec[rec == 0] <- NA
 ```
 
@@ -183,7 +184,7 @@ rec %>%
 ```
     * A graph/table describing the change in recognition across different generations.
 ```{r}
-knitr::kable(arrange(generation.rec.data, desc(generation.rec.data$mean_gen_z_recognition)),
+knitr::kable(head(arrange(generation.rec.data, desc(generation.rec.data$mean_gen_z_recognition)), 50),
              digits = 2,
              col.names = c("Song", "Millenial", "Gen Z"))
 ```
@@ -191,7 +192,32 @@ knitr::kable(arrange(generation.rec.data, desc(generation.rec.data$mean_gen_z_re
     
 ## Original question
 
-Describe the question that you asked from the dataset and a visualization that describes the answer to such question. How do you interpret the dataset and how does it help answer your question.
+We want to know how recognized songs are today that were only recognized by less than 50% of people that were 13-15 years old at the time of release. Do some of these songs gain popularity or do most die out?
 
-    
+```{r}
+low_rec_at_release <- rec %>%
+    filter(`-13` <= .5) %>%
+    pivot_longer(c(`-13`, `-12`, `-11`, `-10`, `-9`, `-8`, `-7`, `-6`, `-5`, `-4`, `-3`, `-2`, `-1`, `0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, `10`),
+                 names_to = "generation", values_to = "recognition") %>%
+    transmute(song = artist_song, generation = generation, recognition = recognition) %>%
+    filter(!is.na(recognition))
+
+ggplot(low_rec_at_release) +
+geom_line(aes(x = as.numeric(generation), recognition, color = song)) +
+geom_smooth(aes(as.numeric(generation), recognition), color = "black") +
+scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
+theme(legend.position = "none") +
+labs(x = "Age in year that song was released",
+     y = "% of people who know song")
+
+low_rec_at_release %>%
+    mutate(diff = recognition - avgs[as.character(generation)]) %>%
+    group_by(song) %>%
+    summarize(diff.from.trend = sum(diff)) %>%
+    arrange(desc(diff.from.trend)) %>%
+    head(5) %>%
+    pull(song)
+```
+
+Most of these songs appear to die out and not be recognized today. We can tell this by the decreasing slope of the trend line for these songs that we recognized by less than 50% of 13-15 year olds when the song was released. This isn't too surprising of a result. It is interesting to see which of these songs are most recognized today though. The top 2 songs are by Notorious B.I.G. and the next 2 most recognized are by Whitney Houston. It makes sense that these artists are at the top since they are still popular today and have many fans that could recognize some of their least popular songs.
     
