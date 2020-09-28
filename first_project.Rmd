@@ -34,15 +34,24 @@ Please delete the section *Instructions* from your final project
 
 ## Article review
 
-In one or two paragraphs summarize the findings of the article that you will be reviewing/reproducing in your own words.
+This article examines the recognition of hit 90's songs today in order to see how 90's music will be characterized by future generations. The article gathered data through a music quiz where participants were asked if they recognized certain Top 100 Billboard songs from the 90's. Different charts were produced to determine how songs stand the test of time and which songs are most recognized today.
 
 ## Description of your dataset
 
 Using a markdown table describe the variables from your dataset that you used for your analysis and whether they were in the original table or were obtained by transforming the original dataset. For variables that were not in the original dataset, briefly describe how you obtain them.
 
+Variable Name    Description
+--------------   ------------------------------------------------------------------
+artist_song      Artist name and song title
+generation       Number of years until birth of subject when the song was released
+recognition      Proportion of subjects that recognized the song
+--------------   ------------------------------------------------------------------
+
+All of these were from the original datasets. The two datasets "time_series_90s_july13" and "time_series_90s_d3_13_15_averaged_july_22" present the data in different forms. 
+
 ## Main conclusions 
 
-Use well-written paragraphs and professional-looking tables and/or graphs to reproduce the main results of your article of interest. You should include at least the following points from each paper:
+Use well-written paragraphs and professional-looking tables and/or graphs to reproduce the main results of your article of interest.
 
 * *90's Music Cannon*:
 
