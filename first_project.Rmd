@@ -167,6 +167,12 @@ rec %>%
          y = "% of people who know song")
 ```
     * A graph/table describing the change in recognition across different generations.
+```{r}
+knitr::kable(arrange(generation.rec.data, desc(generation.rec.data$mean_gen_z_recognition)),
+             digits = 2,
+             col.names = c("Song", "Millenial", "Gen Z"))
+```
+    
     
 ## Original question
 
