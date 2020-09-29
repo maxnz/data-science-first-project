@@ -2,17 +2,34 @@
 title: "Project report"
 author: "Max Narvaez & Ryan Harvey"
 date: "9/24/2020"
-output: pdf_document
+output:
+  pdf_document:
+    fig_height: 3
+    fig_width: 6.5
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 
-recognition.data <- read_csv("time_series_90s_d3_13_15_averaged_july_22.csv")
-rec <- read_csv("time_series_90s_july13.csv")
+rec <- read_csv("time_series_90s_july13.csv") %>%
+    select(-`11`:-`34`)
 generation.rec.data <- read_csv("lollipop_chart_data_july_13.csv")
-rec[rec == 0] <- NA
+
+x <- nrow(rec)
+while (x > 0) {
+  y <- 25
+  while (y > 1) {
+    if (rec[x, y] == 0) {
+      rec[x, y] <- NA
+      y <- y - 1
+    } else {
+      break
+    }
+  }
+  x <- x - 1
+}
+rec
 ```
 
 ```{r flip_sign, include=FALSE}
@@ -41,12 +58,14 @@ This article examines the recognition of hit 90's songs today in order to see ho
 
 Using a markdown table describe the variables from your dataset that you used for your analysis and whether they were in the original table or were obtained by transforming the original dataset. For variables that were not in the original dataset, briefly describe how you obtain them.
 
-Variable Name    Description
---------------   ------------------------------------------------------------------
-artist_song      Artist name and song title
-generation       Number of years until birth of subject when the song was released
-recognition      Proportion of subjects that recognized the song
---------------   ------------------------------------------------------------------
+Variable Name        Description
+------------------   -------------------------------------------------------------------------------
+artist_song          Artist name and song title
+generation           Number of years until birth of subject when the song was released
+recognition          Proportion of subjects that recognized the song
+latest.recognition   Latest recognition data point 
+                     (songs were debuted in different years, this is the last data point for a song)
+--------------       -------------------------------------------------------------------------------
 
 All of these were from the original datasets. The two datasets "time_series_90s_july13" and "time_series_90s_d3_13_15_averaged_july_22" present the data in different forms. 
 
@@ -57,9 +76,10 @@ Use well-written paragraphs and professional-looking tables and/or graphs to rep
 * *90's Music Cannon*:
 
     * The percent of songs from the 90's recognized currently decays with time.
+
 ```{r}
 rec %>%
-    pivot_longer(c(`-13`, `-12`, `-11`, `-10`, `-9`, `-8`, `-7`, `-6`, `-5`, `-4`, `-3`, `-2`, `-1`, `0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, `10`),
+    pivot_longer(`-13`:`10`,
                  names_to = "generation", values_to = "recognition") %>%
     transmute(song = artist_song, generation = generation, recognition = recognition) %>%
     filter(!is.na(recognition)) %>%
@@ -73,7 +93,7 @@ rec %>%
 
 rec %>%
     filter(`-13` >= .9) %>%
-    pivot_longer(c(`-13`, `-12`, `-11`, `-10`, `-9`, `-8`, `-7`, `-6`, `-5`, `-4`, `-3`, `-2`, `-1`, `0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, `10`),
+    pivot_longer(`-13`:`10`,
                  names_to = "generation", values_to = "recognition") %>%
     transmute(song = artist_song, generation = generation, recognition = recognition) %>%
     filter(!is.na(recognition)) %>%
@@ -85,10 +105,12 @@ rec %>%
     labs(x = "Age in year that song was released",
          y = "% of people who know song")
 ```
+
     * A graph of the top-5 /bottom-5 songs as they are currently remembered
+
 ```{r last_non_na_value, include = FALSE}
 last_non_na_value <- function(r) {
-    cols <- lengths(r)
+    cols <- length(r)
     col <- cols - 1
     while (is.na(r[col])) {
         col <- col - 1
@@ -98,67 +120,71 @@ last_non_na_value <- function(r) {
 ```
 
 ```{r}
-rec %>%
+current.rec <- rec %>%
     rowwise() %>%
-    mutate(last_value = sum(1))
+    transmute(artist_song = artist_song,
+              latest.recognition = last_non_na_value(c(`-13`, `-12`, `-11`, `-10`, `-9`, 
+                                                       `-8`, `-7`, `-6`, `-5`, `-4`,
+                                                       `-3`, `-2`, `-1`, `0`, `1`,
+                                                       `2`, `3`, `4`, `5`, `6`,
+                                                       `7`, `8`, `9`, `10`))) %>%
+    arrange(desc(latest.recognition))
+
+top.bottom.5.songs <- union(head(current.rec, 5), tail(current.rec, 5)) %>%
+    pull(artist_song)
+
+rec %>%
+    filter(artist_song %in% top.bottom.5.songs) %>%
+    pivot_longer(`-13`:`10`,
+                 names_to = "generation", values_to = "recognition") %>%
+    transmute(song = artist_song, generation = generation, recognition = recognition) %>%
+    filter(!is.na(recognition)) %>%
+    ggplot() +
+    geom_line(aes(x = as.numeric(generation), recognition, color = song)) +
+    scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
+    theme(legend.position = "bottom", legend.direction = "vertical") +
+    guides(color = guide_legend(ncol=2)) +
+    labs(x = "Age in year that song was released",
+         y = "% of people who know song",
+         color = "Artist/Song")
 ```
+
     * A graph of the top-5 songs that were popular in the 90's but are rarely heard after that
+
 ```{r}
-avg.table <- summarize(rec, 
-                       `-13`=mean(`-13`, na.rm = TRUE),
-                       `-12`=mean(`-12`, na.rm = TRUE),
-                       `-11`=mean(`-11`, na.rm = TRUE),
-                       `-10`=mean(`-10`, na.rm = TRUE),
-                       `-9`=mean(`-9`, na.rm = TRUE),
-                       `-8`=mean(`-8`, na.rm = TRUE),
-                       `-7`=mean(`-7`, na.rm = TRUE),
-                       `-6`=mean(`-6`, na.rm = TRUE),
-                       `-5`=mean(`-5`, na.rm = TRUE),
-                       `-4`=mean(`-4`, na.rm = TRUE),
-                       `-3`=mean(`-3`, na.rm = TRUE),
-                       `-2`=mean(`-2`, na.rm = TRUE),
-                       `-1`=mean(`-1`, na.rm = TRUE),
-                       `0`=mean(`0`, na.rm = TRUE),
-                       `1`=mean(`1`, na.rm = TRUE),
-                       `2`=mean(`2`, na.rm = TRUE),
-                       `3`=mean(`3`, na.rm = TRUE),
-                       `4`=mean(`4`, na.rm = TRUE),
-                       `5`=mean(`5`, na.rm = TRUE),
-                       `6`=mean(`6`, na.rm = TRUE),
-                       `7`=mean(`7`, na.rm = TRUE),
-                       `8`=mean(`8`, na.rm = TRUE),
-                       `9`=mean(`9`, na.rm = TRUE),
-                       `10`=mean(`10`, na.rm = TRUE))
+avg.table <- summarize_at(rec,
+                          vars(`-13`:`10`),
+                          ~ mean(., na.rm = TRUE))
 
 avgs <- c()
-avgs["-13"] = mean(rec$`-13`, na.rm = TRUE)
-avgs["-12"] = mean(rec$`-12`, na.rm = TRUE)
-avgs["-11"] = mean(rec$`-11`, na.rm = TRUE)
-avgs["-10"] = mean(rec$`-10`, na.rm = TRUE)
-avgs["-9"] = mean(rec$`-9`, na.rm = TRUE)
-avgs["-8"] = mean(rec$`-8`, na.rm = TRUE)
-avgs["-7"] = mean(rec$`-7`, na.rm = TRUE)
-avgs["-6"] = mean(rec$`-6`, na.rm = TRUE)
-avgs["-5"] = mean(rec$`-5`, na.rm = TRUE)
-avgs["-4"] = mean(rec$`-4`, na.rm = TRUE)
-avgs["-3"] = mean(rec$`-3`, na.rm = TRUE)
-avgs["-2"] = mean(rec$`-2`, na.rm = TRUE)
-avgs["-1"] = mean(rec$`-1`, na.rm = TRUE)
-avgs["0"] = mean(rec$`0`, na.rm = TRUE)
-avgs["1"] = mean(rec$`1`, na.rm = TRUE)
-avgs["2"] = mean(rec$`2`, na.rm = TRUE)
-avgs["3"] = mean(rec$`3`, na.rm = TRUE)
-avgs["4"] = mean(rec$`4`, na.rm = TRUE)
-avgs["5"] = mean(rec$`5`, na.rm = TRUE)
-avgs["6"] = mean(rec$`6`, na.rm = TRUE)
-avgs["7"] = mean(rec$`7`, na.rm = TRUE)
-avgs["8"] = mean(rec$`8`, na.rm = TRUE)
-avgs["9"] = mean(rec$`9`, na.rm = TRUE)
-avgs["10"] = mean(rec$`10`, na.rm = TRUE)
+avgs["-13"] = avg.table$`-13`
+avgs["-12"] = avg.table$`-12`
+avgs["-11"] = avg.table$`-11`
+avgs["-10"] = avg.table$`-10`
+avgs["-9"] = avg.table$`-9`
+avgs["-8"] = avg.table$`-8`
+avgs["-7"] = avg.table$`-7`
+avgs["-6"] = avg.table$`-6`
+avgs["-5"] = avg.table$`-5`
+avgs["-4"] = avg.table$`-4`
+avgs["-3"] = avg.table$`-3`
+avgs["-2"] = avg.table$`-2`
+avgs["-1"] = avg.table$`-1`
+avgs["0"] = avg.table$`0`
+avgs["1"] = avg.table$`1`
+avgs["2"] = avg.table$`2`
+avgs["3"] = avg.table$`3`
+avgs["4"] = avg.table$`4`
+avgs["5"] = avg.table$`5`
+avgs["6"] = avg.table$`6`
+avgs["7"] = avg.table$`7`
+avgs["8"] = avg.table$`8`
+avgs["9"] = avg.table$`9`
+avgs["10"] = avg.table$`10`
 
 low_songs <- rec %>%
     filter(`-13` >= .8) %>%
-    pivot_longer(c(`-13`, `-12`, `-11`, `-10`, `-9`, `-8`, `-7`, `-6`, `-5`, `-4`, `-3`, `-2`, `-1`, `0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, `10`),
+    pivot_longer(`-13`:`10`,
                  names_to = "generation", values_to = "recognition") %>%
     transmute(song = artist_song, generation = generation, recognition = recognition) %>%
     filter(!is.na(recognition)) %>%
@@ -171,25 +197,22 @@ low_songs <- rec %>%
 
 rec %>%
     filter(artist_song %in% low_songs) %>%
-    pivot_longer(c(`-13`, `-12`, `-11`, `-10`, `-9`, `-8`, `-7`, `-6`, `-5`, `-4`, `-3`, `-2`, `-1`, `0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, `10`),
+    pivot_longer(`-13`:`10`,
                  names_to = "generation", values_to = "recognition") %>%
     transmute(song = artist_song, generation = generation, recognition = recognition) %>%
     filter(!is.na(recognition)) %>%
     ggplot() +
     geom_line(aes(x = as.numeric(generation), recognition, color = song)) +
     scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
-    theme(legend.position = "none") +
+    theme(legend.position = "bottom", legend.direction = "vertical") +
+    guides(color = guide_legend(ncol=2)) +
     labs(x = "Age in year that song was released",
-         y = "% of people who know song")
+         y = "% of people who know song",
+         color = "Artist/Song")
 ```
+
     * A graph/table describing the change in recognition across different generations.
-```{r}
-knitr::kable(head(arrange(generation.rec.data, desc(generation.rec.data$mean_gen_z_recognition)), 50),
-             digits = 2,
-             col.names = c("Song", "Millenial", "Gen Z"))
-```
-    
-    
+
 ## Original question
 
 We want to know how recognized songs are today that were only recognized by less than 50% of people that were 13-15 years old at the time of release. Do some of these songs gain popularity or do most die out?
@@ -197,7 +220,7 @@ We want to know how recognized songs are today that were only recognized by less
 ```{r}
 low_rec_at_release <- rec %>%
     filter(`-13` <= .5) %>%
-    pivot_longer(c(`-13`, `-12`, `-11`, `-10`, `-9`, `-8`, `-7`, `-6`, `-5`, `-4`, `-3`, `-2`, `-1`, `0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, `10`),
+    pivot_longer(`-13`:`10`,
                  names_to = "generation", values_to = "recognition") %>%
     transmute(song = artist_song, generation = generation, recognition = recognition) %>%
     filter(!is.na(recognition))
@@ -220,4 +243,3 @@ low_rec_at_release %>%
 ```
 
 Most of these songs appear to die out and not be recognized today. We can tell this by the decreasing slope of the trend line for these songs that we recognized by less than 50% of 13-15 year olds when the song was released. This isn't too surprising of a result. It is interesting to see which of these songs are most recognized today though. The top 2 songs are by Notorious B.I.G. and the next 2 most recognized are by Whitney Houston. It makes sense that these artists are at the top since they are still popular today and have many fans that could recognize some of their least popular songs.
-    
