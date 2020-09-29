@@ -128,17 +128,20 @@ rec %>%
     filter(artist_song %in% top.bottom.5.songs) %>%
     pivot_longer(`-13`:`10`,
                  names_to = "generation", values_to = "recognition") %>%
-    transmute(song = artist_song, generation = generation, recognition = recognition) %>%
+    transmute(song = artist_song, generation = generation, recognition = recognition * 100) %>%
     filter(!is.na(recognition)) %>%
     ggplot() +
     geom_line(aes(x = as.numeric(generation), recognition, color = song)) +
     scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
-    theme(legend.position = "bottom", legend.direction = "vertical") +
+    theme(legend.position = "bottom", legend.direction = "vertical", plot.title = element_text(hjust = 0.5)) +
     guides(color = guide_legend(ncol=2)) +
     labs(x = "Age in year that song was released",
          y = "% of people who know song",
+         title = "Top 5 and Bottom 5 Currently Recognized",
          color = "Artist/Song")
 ```
+
+
 
 ### A graph of the top-5 songs that were popular in the 90's but are rarely heard after that
 
@@ -147,37 +150,14 @@ avg.table <- summarize_at(rec,
                           vars(`-13`:`10`),
                           ~ mean(., na.rm = TRUE))
 
-avgs <- c()
-avgs["-13"] = avg.table$`-13`
-avgs["-12"] = avg.table$`-12`
-avgs["-11"] = avg.table$`-11`
-avgs["-10"] = avg.table$`-10`
-avgs["-9"] = avg.table$`-9`
-avgs["-8"] = avg.table$`-8`
-avgs["-7"] = avg.table$`-7`
-avgs["-6"] = avg.table$`-6`
-avgs["-5"] = avg.table$`-5`
-avgs["-4"] = avg.table$`-4`
-avgs["-3"] = avg.table$`-3`
-avgs["-2"] = avg.table$`-2`
-avgs["-1"] = avg.table$`-1`
-avgs["0"] = avg.table$`0`
-avgs["1"] = avg.table$`1`
-avgs["2"] = avg.table$`2`
-avgs["3"] = avg.table$`3`
-avgs["4"] = avg.table$`4`
-avgs["5"] = avg.table$`5`
-avgs["6"] = avg.table$`6`
-avgs["7"] = avg.table$`7`
-avgs["8"] = avg.table$`8`
-avgs["9"] = avg.table$`9`
-avgs["10"] = avg.table$`10`
+avgs <- as.numeric(avg.table[1,])
+names(avgs) <- colnames(avg.table)
 
 low_songs <- rec %>%
     filter(`-13` >= .8) %>%
     pivot_longer(`-13`:`10`,
                  names_to = "generation", values_to = "recognition") %>%
-    transmute(song = artist_song, generation = generation, recognition = recognition) %>%
+    transmute(song = artist_song, generation = generation, recognition = recognition * 100) %>%
     filter(!is.na(recognition)) %>%
     mutate(diff = recognition - avgs[as.character(generation)]) %>%
     group_by(song) %>%
@@ -195,10 +175,11 @@ rec %>%
     ggplot() +
     geom_line(aes(x = as.numeric(generation), recognition, color = song)) +
     scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
-    theme(legend.position = "bottom", legend.direction = "vertical") +
+    theme(legend.position = "bottom", legend.direction = "vertical", plot.title = element_text(hjust = 0.5)) +
     guides(color = guide_legend(ncol=2)) +
     labs(x = "Age in year that song was released",
          y = "% of people who know song",
+         title = "Top 5 Songs That Died Out Quickly",
          color = "Artist/Song")
 ```
 
