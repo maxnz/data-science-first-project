@@ -167,9 +167,10 @@ knitr::kable(head(arrange(generation.rec.data,
              col.names = c("Artist/Song", "Millenial", "Gen Z"))
 ```
 
-## Top 90's Songs That Were Less Recognized 
+## Top 90's Songs That Were Less Recognized
 
-```{r, echo=FALSE, message=FALSE}
+<div style="float: left; width: 60%;">
+```{r, echo=FALSE, message=FALSE, fig.width=4.7, fig.height=4}
 low_rec_at_release <- rec %>%
     filter(`-13` <= .5) %>%
     pivot_longer(`-13`:`10`,
@@ -184,14 +185,22 @@ scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
 theme(legend.position = "none") +
 labs(x = "Age in year that song was released",
      y = "% of people who know song")
+```
+</div>
 
-low_rec_at_release %>%
+<div style="float: right; width: 40%;">
+```{r, echo=FALSE}
+knitr::kable(low_rec_at_release %>%
     mutate(diff = recognition - avgs[as.character(generation)]) %>%
     group_by(song) %>%
     summarize(diff.from.trend = sum(diff)) %>%
     arrange(desc(diff.from.trend)) %>%
     head(5) %>%
-    pull(song)
+    pull(song),
+    col.names = "Arists/Song")
 ```
+</div>
+
+
 
 
