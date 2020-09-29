@@ -150,8 +150,7 @@ avg.table <- summarize_at(rec,
                           vars(`-13`:`10`),
                           ~ mean(., na.rm = TRUE))
 
-avgs <- as.numeric(avg.table[1,])
-names(avgs) <- colnames(avg.table)
+avgs <- unlist(avg.table[1,])
 
 low_songs <- rec %>%
     filter(`-13` >= .8) %>%
