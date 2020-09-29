@@ -4,7 +4,7 @@ author: "Max Narvaez & Ryan Harvey"
 date: "9/24/2020"
 output:
   pdf_document:
-    fig_height: 3
+    fig_height: 5
     fig_width: 6.5
 ---
 
@@ -15,7 +15,29 @@ library(tidyverse)
 rec <- read_csv("time_series_90s_july13.csv") %>%
     select(-`11`:-`34`)
 generation.rec.data <- read_csv("lollipop_chart_data_july_13.csv")
+```
 
+##### Helper functions used later
+
+```{r helpers}
+flip_sign <- function(l) {
+     l <- as.numeric(l)*(-1)
+     parse(text=l)
+}
+
+last_non_na_value <- function(r) {
+    cols <- length(r)
+    col <- cols - 1
+    while (is.na(r[col])) {
+        col <- col - 1
+    }
+    r[col]
+}
+```
+
+### Prepare Dataset
+
+```{r prepare}
 x <- nrow(rec)
 while (x > 0) {
   y <- 25
@@ -28,14 +50,6 @@ while (x > 0) {
     }
   }
   x <- x - 1
-}
-rec
-```
-
-```{r flip_sign, include=FALSE}
-flip_sign <- function(l) {
-     l <- as.numeric(l)*(-1)
-     parse(text=l)
 }
 ```
 
@@ -59,23 +73,24 @@ This article examines the recognition of hit 90's songs today in order to see ho
 Using a markdown table describe the variables from your dataset that you used for your analysis and whether they were in the original table or were obtained by transforming the original dataset. For variables that were not in the original dataset, briefly describe how you obtain them.
 
 Variable Name        Description
-------------------   -------------------------------------------------------------------------------
+------------------   ------------------------------------------------------------------------------------
 artist_song          Artist name and song title
 generation           Number of years until birth of subject when the song was released
 recognition          Proportion of subjects that recognized the song
 latest.recognition   Latest recognition data point 
                      (songs were debuted in different years, this is the last data point for a song)
---------------       -------------------------------------------------------------------------------
+diff.from.trend      The difference between the song's popularity and the average popularity for that age
+------------------   ------------------------------------------------------------------------------------
 
-All of these were from the original datasets. The two datasets "time_series_90s_july13" and "time_series_90s_d3_13_15_averaged_july_22" present the data in different forms. 
+The first three were from the original datasets.
 
 ## Main conclusions 
 
 Use well-written paragraphs and professional-looking tables and/or graphs to reproduce the main results of your article of interest.
 
-* *90's Music Cannon*:
+### 90's Music Cannon
 
-    * The percent of songs from the 90's recognized currently decays with time.
+#### The percent of songs from the 90's recognized currently decays with time
 
 ```{r}
 rec %>%
@@ -106,18 +121,7 @@ rec %>%
          y = "% of people who know song")
 ```
 
-    * A graph of the top-5 /bottom-5 songs as they are currently remembered
-
-```{r last_non_na_value, include = FALSE}
-last_non_na_value <- function(r) {
-    cols <- length(r)
-    col <- cols - 1
-    while (is.na(r[col])) {
-        col <- col - 1
-    }
-    r[col]
-}
-```
+#### A graph of the top-5 / bottom-5 songs as they are currently remembered
 
 ```{r}
 current.rec <- rec %>%
@@ -149,7 +153,7 @@ rec %>%
          color = "Artist/Song")
 ```
 
-    * A graph of the top-5 songs that were popular in the 90's but are rarely heard after that
+#### A graph of the top-5 songs that were popular in the 90's but are rarely heard after that
 
 ```{r}
 avg.table <- summarize_at(rec,
@@ -211,7 +215,13 @@ rec %>%
          color = "Artist/Song")
 ```
 
-    * A graph/table describing the change in recognition across different generations.
+#### A graph/table describing the change in recognition across different generations
+
+```{r}
+knitr::kable(head(arrange(generation.rec.data, desc(generation.rec.data$mean_gen_z_recognition)), 50),
+             digits = 2,
+             col.names = c("Song", "Millenial", "Gen Z"))
+```
 
 ## Original question
 
