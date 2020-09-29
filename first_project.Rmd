@@ -17,7 +17,27 @@ rec <- read_csv("time_series_90s_july13.csv") %>%
 generation.rec.data <- read_csv("lollipop_chart_data_july_13.csv")
 ```
 
-##### Helper functions used later
+## Article Review
+
+This article examines the recognition of hit 90's songs today in order to see how 90's music will be characterized by future generations. The article gathered data through a music quiz where participants were asked if they recognized certain Top 100 Billboard songs from the 90's. Different charts were produced to determine how songs stand the test of time and which songs are most recognized today.
+
+## Description of the Dataset
+
+Using a markdown table describe the variables from your dataset that you used for your analysis and whether they were in the original table or were obtained by transforming the original dataset. For variables that were not in the original dataset, briefly describe how you obtain them.
+
+Variable Name        Description
+------------------   ------------------------------------------------------------------------------------
+artist_song          Artist name and song title
+generation           Number of years until birth of subject when the song was released
+recognition          Proportion of subjects that recognized the song
+latest.recognition   Latest recognition data point 
+                     (songs were debuted in different years, this is the last data point for a song)
+diff.from.trend      The difference between the song's popularity and the average popularity for that age
+------------------   ------------------------------------------------------------------------------------
+
+The first three variables were from the original datasets.
+
+## Helper functions used later
 
 ```{r helpers}
 flip_sign <- function(l) {
@@ -35,7 +55,7 @@ last_non_na_value <- function(r) {
 }
 ```
 
-### Prepare Dataset
+## Prepare Dataset
 
 ```{r prepare}
 x <- nrow(rec)
@@ -53,44 +73,11 @@ while (x > 0) {
 }
 ```
 
-## Instructions
-
-The following document is a template of the report that will be due on Oct 1st at 9am, please change the information in lines 1-4 to have:
-
-* Your project title
-* The members of your group
-
-The report *should* be uploaded as a PDF or an HTML document through Moodle. If you submit your project as an .Rmd you will be deducted *20 points* from your project grade.
-
-Please delete the section *Instructions* from your final project
-
-## Article review
-
-This article examines the recognition of hit 90's songs today in order to see how 90's music will be characterized by future generations. The article gathered data through a music quiz where participants were asked if they recognized certain Top 100 Billboard songs from the 90's. Different charts were produced to determine how songs stand the test of time and which songs are most recognized today.
-
-## Description of your dataset
-
-Using a markdown table describe the variables from your dataset that you used for your analysis and whether they were in the original table or were obtained by transforming the original dataset. For variables that were not in the original dataset, briefly describe how you obtain them.
-
-Variable Name        Description
-------------------   ------------------------------------------------------------------------------------
-artist_song          Artist name and song title
-generation           Number of years until birth of subject when the song was released
-recognition          Proportion of subjects that recognized the song
-latest.recognition   Latest recognition data point 
-                     (songs were debuted in different years, this is the last data point for a song)
-diff.from.trend      The difference between the song's popularity and the average popularity for that age
-------------------   ------------------------------------------------------------------------------------
-
-The first three were from the original datasets.
-
-## Main conclusions 
+## Main Conclusions 
 
 Use well-written paragraphs and professional-looking tables and/or graphs to reproduce the main results of your article of interest.
 
-### 90's Music Cannon
-
-#### The percent of songs from the 90's recognized currently decays with time
+### The percent of songs from the 90's recognized currently decays with time
 
 ```{r}
 rec %>%
@@ -121,7 +108,7 @@ rec %>%
          y = "% of people who know song")
 ```
 
-#### A graph of the top-5 / bottom-5 songs as they are currently remembered
+### A graph of the top-5 / bottom-5 songs as they are currently remembered
 
 ```{r}
 current.rec <- rec %>%
@@ -153,7 +140,7 @@ rec %>%
          color = "Artist/Song")
 ```
 
-#### A graph of the top-5 songs that were popular in the 90's but are rarely heard after that
+### A graph of the top-5 songs that were popular in the 90's but are rarely heard after that
 
 ```{r}
 avg.table <- summarize_at(rec,
@@ -215,12 +202,13 @@ rec %>%
          color = "Artist/Song")
 ```
 
-#### A graph/table describing the change in recognition across different generations
+### A graph/table describing the change in recognition across different generations
 
 ```{r}
-knitr::kable(head(arrange(generation.rec.data, desc(generation.rec.data$mean_gen_z_recognition)), 50),
+knitr::kable(head(arrange(generation.rec.data, 
+                          desc(generation.rec.data$mean_gen_z_recognition)), 50),
              digits = 2,
-             col.names = c("Song", "Millenial", "Gen Z"))
+             col.names = c("Artist/Song", "Millenial", "Gen Z"))
 ```
 
 ## Original question
