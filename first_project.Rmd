@@ -40,11 +40,17 @@ The first three variables were from the original datasets.
 ## Helper functions used later
 
 ```{r helpers}
+# Flip -13 to 13, 10 to -10, 0 to 0, etc.
+#
+# Used to format the labels for the ages
 flip_sign <- function(l) {
      l <- as.numeric(l)*(-1)
      parse(text=l)
 }
 
+# Get the last value in a row that isn't NA
+#
+# Used to find the latest data point for each song
 last_non_na_value <- function(r) {
     cols <- length(r)
     col <- cols - 1
@@ -58,6 +64,14 @@ last_non_na_value <- function(r) {
 ## Prepare Dataset
 
 ```{r prepare}
+# For each row, start at the last column and 
+#  work backwards towards the first column,
+#  replacing any 0 with NA until a non-0 value is found,
+#  then move to the next row
+#
+# This prevents us from losing data that should be 0
+#  while cleaning up the data so non-existent data points
+#  can be identified and filtered out easily
 x <- nrow(rec)
 while (x > 0) {
   y <- 25
@@ -146,11 +160,9 @@ rec %>%
 ### A graph of the top-5 songs that were popular in the 90's but are rarely heard after that
 
 ```{r}
-avg.table <- summarize_at(rec,
+avgs <- unlist(summarize_at(rec,
                           vars(`-13`:`10`),
-                          ~ mean(., na.rm = TRUE))
-
-avgs <- unlist(avg.table[1,])
+                          ~ mean(., na.rm = TRUE))[1,])
 
 low_songs <- rec %>%
     filter(`-13` >= .8) %>%
