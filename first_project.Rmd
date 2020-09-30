@@ -1,7 +1,7 @@
 ---
-title: "Project report"
+title: "Project Report - 90's Music Canon"
 author: "Max Narvaez & Ryan Harvey"
-date: "9/24/2020"
+date: "9/30/2020"
 output:
   pdf_document:
     fig_height: 5
@@ -23,8 +23,6 @@ This article examines the recognition of hit 90's songs today in order to see ho
 
 ## Description of the Dataset
 
-Using a markdown table describe the variables from your dataset that you used for your analysis and whether they were in the original table or were obtained by transforming the original dataset. For variables that were not in the original dataset, briefly describe how you obtain them.
-
 Variable Name        Description
 ------------------   ------------------------------------------------------------------------------------
 artist_song          Artist name and song title
@@ -35,7 +33,7 @@ latest.recognition   Latest recognition data point
 diff.from.trend      The difference between the song's popularity and the average popularity for that age
 ------------------   ------------------------------------------------------------------------------------
 
-The first three variables were from the original datasets.
+The first three variables were from the original datasets. The latest.regocnition variable is found by using the last_non_na_value() function to find the trailing non NA value for each song. The diff.from.trend variable is found by taking the sum of the difference between a song's recognition data point and the average recognition rate for each age. 
 
 ## Helper functions used later
 
@@ -87,13 +85,12 @@ while (x > 0) {
 }
 ```
 
-## Main Conclusions 
+## Main Conclusions from Article
 
-Use well-written paragraphs and professional-looking tables and/or graphs to reproduce the main results of your article of interest.
 
-### The percent of songs from the 90's recognized currently decays with time
+### (1) The percent of songs from the 90's recognized currently decays with time
 
-```{r}
+```{r, message = FALSE}
 rec %>%
     pivot_longer(`-13`:`10`,
                  names_to = "generation", values_to = "recognition") %>%
@@ -105,8 +102,13 @@ rec %>%
     scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
     theme(legend.position = "none") +
     labs(x = "Age in year that song was released",
-         y = "% of people who know song")
+         y = "% of people who know song",
+         title = "All Top 90's Songs Recognition Decay with Age")
+```
 
+This plot includes every top 90's song recognition based on age. There is an overall downward trend, which makes sense since certain songs will be forgotten over time. We will use this trend line as our average recognition rate for some of the following plots in this report. This plot doesn't tell us how some songs hold up over time. The next plot tries to do that.
+
+```{r, message = FALSE}
 rec %>%
     filter(`-13` >= .9) %>%
     pivot_longer(`-13`:`10`,
@@ -119,10 +121,13 @@ rec %>%
     scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
     theme(legend.position = "none") +
     labs(x = "Age in year that song was released",
-         y = "% of people who know song")
+         y = "% of people who know song",
+         title = "Most Recognized Top 90's Songs Recognition Decay with Age")
 ```
 
-### A graph of the top-5 / bottom-5 songs as they are currently remembered
+This plot is all the top 90's songs that were recognized by at least 90% of 13-15 year old at the time of the song's release. Once again, there is a downward trend, but the slope is less steep than the previous plot. This reveals that the songs that almost all Millenials recognize are much more likely to be recognized by Gen Z. 
+
+### (2) A graph of the top-5 / bottom-5 songs as they are currently remembered
 
 ```{r}
 current.rec <- rec %>%
@@ -147,17 +152,18 @@ rec %>%
     ggplot() +
     geom_line(aes(x = as.numeric(generation), recognition, color = song)) +
     scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
-    theme(legend.position = "bottom", legend.direction = "vertical", plot.title = element_text(hjust = 0.5)) +
+    theme(legend.position = "bottom", legend.direction = "vertical",
+          plot.title = element_text(hjust = 0.5)) +
     guides(color = guide_legend(ncol=2)) +
     labs(x = "Age in year that song was released",
          y = "% of people who know song",
-         title = "Top 5 and Bottom 5 Currently Recognized",
+         title = "Top 5 and Bottom 5 Songs Currently Recognized",
          color = "Artist/Song")
 ```
 
 
 
-### A graph of the top-5 songs that were popular in the 90's but are rarely heard after that
+### (3) A graph of the top-5 songs that were popular in the 90's but are rarely heard after that
 
 ```{r}
 avgs <- unlist(summarize_at(rec,
@@ -186,7 +192,8 @@ rec %>%
     ggplot() +
     geom_line(aes(x = as.numeric(generation), recognition, color = song)) +
     scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
-    theme(legend.position = "bottom", legend.direction = "vertical", plot.title = element_text(hjust = 0.5)) +
+    theme(legend.position = "bottom", legend.direction = "vertical",
+          plot.title = element_text(hjust = 0.5)) +
     guides(color = guide_legend(ncol=2)) +
     labs(x = "Age in year that song was released",
          y = "% of people who know song",
@@ -194,7 +201,7 @@ rec %>%
          color = "Artist/Song")
 ```
 
-### A graph/table describing the change in recognition across different generations
+### (4) A graph/table describing the change in recognition across different generations
 
 ```{r}
 knitr::kable(head(arrange(generation.rec.data, 
@@ -203,11 +210,13 @@ knitr::kable(head(arrange(generation.rec.data,
              col.names = c("Artist/Song", "Millenial", "Gen Z"))
 ```
 
-## Original question
+This table is a top 50 ranking of top 90's songs based on Gen Z recognition rank. It is interesting to note which songs have a large gap between Millenial and Gen Z recognition rate. These songs would have been very popular back when they came out, but have lost their popularity. The few songs that are both recognized by almost all Millenials and Gen Z are the songs that will live on. The higher the recognition rate of songs by Gen Z, the more likely they will continue to define the 90's music canon.
+
+## Our question
 
 We want to know how recognized songs are today that were only recognized by less than 50% of people that were 13-15 years old at the time of release. Do some of these songs gain popularity or do most die out?
 
-```{r}
+```{r, message = FALSE}
 low_rec_at_release <- rec %>%
     filter(`-13` <= .5) %>%
     pivot_longer(`-13`:`10`,
@@ -221,7 +230,8 @@ geom_smooth(aes(as.numeric(generation), recognition), color = "black") +
 scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
 theme(legend.position = "none") +
 labs(x = "Age in year that song was released",
-     y = "% of people who know song")
+     y = "% of people who know song",
+     title = "Less Popular Top 90's Songs Recogntion with Age")
 
 low_rec_at_release %>%
     mutate(diff = recognition - avgs[as.character(generation)]) %>%
@@ -232,4 +242,4 @@ low_rec_at_release %>%
     pull(song)
 ```
 
-Most of these songs appear to die out and not be recognized today. We can tell this by the decreasing slope of the trend line for these songs that we recognized by less than 50% of 13-15 year olds when the song was released. This isn't too surprising of a result. It is interesting to see which of these songs are most recognized today though. The top 2 songs are by Notorious B.I.G. and the next 2 most recognized are by Whitney Houston. It makes sense that these artists are at the top since they are still popular today and have many fans that could recognize some of their least popular songs.
+Most of these songs appear to die out and not be recognized today. We can tell this by the decreasing slope of the trend line for these songs that we recognized by less than 50% of 13-15 year olds when the song was released. Most of these songs are only recognized by 10% of Gen Z. This isn't too surprising of a result. It is interesting to see which of these songs are most recognized today though. The top 2 songs are by The Notorious B.I.G. and the next 2 most recognized are by Whitney Houston. It makes sense that these artists are at the top since they are still popular today and have many fans that could recognize some of their least popular songs.
