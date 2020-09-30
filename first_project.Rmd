@@ -1,7 +1,7 @@
 ---
-title: "Project report"
+title: "Project Report - 90's Music Canon"
 author: "Max Narvaez & Ryan Harvey"
-date: "9/24/2020"
+date: "9/30/2020"
 output:
   pdf_document:
     fig_height: 5
@@ -13,17 +13,17 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 
 rec <- read_csv("time_series_90s_july13.csv") %>%
-    select(-`11`:-`34`)
+  select(-`11`:-`34`)
 generation.rec.data <- read_csv("lollipop_chart_data_july_13.csv")
 ```
 
 ## Article Review
 
-This article examines the recognition of hit 90's songs today in order to see how 90's music will be characterized by future generations. The article gathered data through a music quiz where participants were asked if they recognized certain Top 100 Billboard songs from the 90's. Different charts were produced to determine how songs stand the test of time and which songs are most recognized today.
+This article examines the recognition of hit 90's songs today in order to see how 90's music will be characterized by future generations.
+The article gathered data through a music quiz where participants were asked if they recognized certain Top 100 Billboard songs from the 90's.
+Different charts were produced to determine how songs stand the test of time and which songs are most recognized today.
 
 ## Description of the Dataset
-
-Using a markdown table describe the variables from your dataset that you used for your analysis and whether they were in the original table or were obtained by transforming the original dataset. For variables that were not in the original dataset, briefly describe how you obtain them.
 
 Variable Name        Description
 ------------------   ------------------------------------------------------------------------------------
@@ -36,6 +36,8 @@ diff.from.trend      The difference between the song's popularity and the averag
 ------------------   ------------------------------------------------------------------------------------
 
 The first three variables were from the original datasets.
+The `latest.regocnition` variable is found by using the `last_non_na_value()` function to find the trailing non `NA` value for each song.
+The `diff.from.trend` variable is found by taking the sum of the difference between a song's recognition data point and the average recognition rate for each age. 
 
 ## Helper functions used later
 
@@ -44,20 +46,20 @@ The first three variables were from the original datasets.
 #
 # Used to format the labels for the ages
 flip_sign <- function(l) {
-     l <- as.numeric(l)*(-1)
-     parse(text=l)
+  l <- as.numeric(l)*(-1)
+  parse(text=l)
 }
 
 # Get the last value in a row that isn't NA
 #
 # Used to find the latest data point for each song
 last_non_na_value <- function(r) {
-    cols <- length(r)
-    col <- cols - 1
-    while (is.na(r[col])) {
-        col <- col - 1
-    }
-    r[col]
+  cols <- length(r)
+  col <- cols - 1
+  while (is.na(r[col])) {
+    col <- col - 1
+  }
+  r[col]
 }
 ```
 
@@ -69,9 +71,14 @@ last_non_na_value <- function(r) {
 #  replacing any 0 with NA until a non-0 value is found,
 #  then move to the next row
 #
-# This prevents us from losing data that should be 0
-#  while cleaning up the data so non-existent data points
-#  can be identified and filtered out easily
+# This cleans up the data so non-existent data points
+#  can be identified and filtered out easily while
+#  preventing us from losing data that should be 0.
+# Technically we could be losing some data if songs ended
+#  with a 0% recognition rate, but because of how the data
+#  is presented, this would be difficult to distinguish
+#  from a song that has 0s filling the extra data points.
+# Thus it is likely not a large issue if it is at all.
 x <- nrow(rec)
 while (x > 0) {
   y <- 25
@@ -87,93 +94,108 @@ while (x > 0) {
 }
 ```
 
-## Main Conclusions 
+## Main Conclusions from Article
 
-Use well-written paragraphs and professional-looking tables and/or graphs to reproduce the main results of your article of interest.
+### (1) The percent of songs from the 90's recognized currently decays with time
 
-### The percent of songs from the 90's recognized currently decays with time
-
-```{r}
+```{r, message = FALSE}
 rec %>%
-    pivot_longer(`-13`:`10`,
-                 names_to = "generation", values_to = "recognition") %>%
-    transmute(song = artist_song, 
-              generation = generation, 
-              recognition = recognition * 100) %>%
-    filter(!is.na(recognition)) %>%
-    ggplot() +
-    geom_line(aes(x = as.numeric(generation), recognition, color = song)) +
-    geom_smooth(aes(as.numeric(generation), recognition), color = "black") +
-    scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
-    theme(legend.position = "none") +
-    labs(x = "Age in year that song was released",
-         y = "% of people who know song")
-
-rec %>%
-    filter(`-13` >= .9) %>%
-    pivot_longer(`-13`:`10`,
-                 names_to = "generation", values_to = "recognition") %>%
-    transmute(song = artist_song, 
-              generation = generation, 
-              recognition = recognition * 100) %>%
-    filter(!is.na(recognition)) %>%
-    ggplot() +
-    geom_line(aes(x = as.numeric(generation), recognition, color = song)) +
-    geom_smooth(aes(as.numeric(generation), recognition), color = "black") +
-    scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
-    theme(legend.position = "none") +
-    labs(x = "Age in year that song was released",
-         y = "% of people who know song")
+  pivot_longer(`-13`:`10`,
+               names_to = "generation",
+               values_to = "recognition") %>%
+  transmute(song = artist_song, 
+            generation = generation, 
+            recognition = recognition * 100) %>%
+  filter(!is.na(recognition)) %>%
+  ggplot() +
+  geom_line(aes(x = as.numeric(generation), recognition, color = song)) +
+  geom_smooth(aes(as.numeric(generation), recognition), color = "black") +
+  scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
+  theme(legend.position = "none") +
+  labs(x = "Age in year that song was released",
+       y = "% of people who know song",
+       title = "All Top 90's Songs Recognition Decay with Age")
 ```
 
-### A graph of the top-5 / bottom-5 songs as they are currently remembered
+This plot includes every top 90's song recognition based on age.
+There is an overall downward trend, which makes sense since certain songs will be forgotten over time.
+We will use this trend line as our average recognition rate for some of the following plots in this report.
+This plot doesn't tell us how some songs hold up over time.
+The next plot tries to do that.
+
+```{r, message = FALSE}
+rec %>%
+  filter(`-13` >= .9) %>%
+  pivot_longer(`-13`:`10`,
+               names_to = "generation", 
+               values_to = "recognition") %>%
+  transmute(song = artist_song, 
+            generation = generation, 
+            recognition = recognition * 100) %>%
+  filter(!is.na(recognition)) %>%
+  ggplot() +
+  geom_line(aes(x = as.numeric(generation), recognition, color = song)) +
+  geom_smooth(aes(as.numeric(generation), recognition), color = "black") +
+  scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
+  theme(legend.position = "none") +
+  labs(x = "Age in year that song was released",
+       y = "% of people who know song",
+       title = "Most Recognized Top 90's Songs Recognition Decay with Age")
+```
+
+This plot is all the top 90's songs that were recognized by at least 90% of 13-15 year old at the time of the song's release.
+Once again, there is a downward trend, but the slope is less steep than the previous plot.
+This reveals that the songs that almost all Millenials recognize are much more likely to be recognized by Gen Z. 
+
+### (2) A graph of the top-5 / bottom-5 songs as they are currently remembered
 
 ```{r}
 current.rec <- rec %>%
-    rowwise() %>%
-    transmute(artist_song = artist_song,
-              latest.recognition = last_non_na_value(c(`-13`, `-12`, `-11`, `-10`, `-9`, 
-                                                       `-8`, `-7`, `-6`, `-5`, `-4`,
-                                                       `-3`, `-2`, `-1`, `0`, `1`,
-                                                       `2`, `3`, `4`, `5`, `6`,
-                                                       `7`, `8`, `9`, `10`))) %>%
-    arrange(desc(latest.recognition))
+  rowwise() %>%
+  transmute(artist_song = artist_song,
+            latest.recognition = last_non_na_value(c(`-13`, `-12`, `-11`, `-10`, `-9`, 
+                                                     `-8`, `-7`, `-6`, `-5`, `-4`,
+                                                     `-3`, `-2`, `-1`, `0`, `1`,
+                                                     `2`, `3`, `4`, `5`, `6`,
+                                                     `7`, `8`, `9`, `10`))) %>%
+  arrange(desc(latest.recognition))
 
 top.bottom.5.songs <- union(head(current.rec, 5), tail(current.rec, 5)) %>%
-    pull(artist_song)
+  pull(artist_song)
 
 rec %>%
-    filter(artist_song %in% top.bottom.5.songs) %>%
-    pivot_longer(`-13`:`10`,
-                 names_to = "generation", values_to = "recognition") %>%
-    transmute(song = artist_song, 
-              generation = generation, 
-              recognition = recognition * 100) %>%
-    filter(!is.na(recognition)) %>%
-    ggplot() +
-    geom_line(aes(x = as.numeric(generation), recognition, color = song)) +
-    scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
-    theme(legend.position = "bottom", 
-          legend.direction = "vertical", 
-          plot.title = element_text(hjust = 0.5)) +
-    guides(color = guide_legend(ncol=2)) +
-    labs(x = "Age in year that song was released",
-         y = "% of people who know song",
-         title = "Top 5 and Bottom 5 Currently Recognized",
-         color = "Artist/Song")
+  filter(artist_song %in% top.bottom.5.songs) %>%
+  pivot_longer(`-13`:`10`,
+               names_to = "generation", 
+               values_to = "recognition") %>%
+  transmute(song = artist_song, 
+            generation = generation, 
+            recognition = recognition * 100) %>%
+  filter(!is.na(recognition)) %>%
+  ggplot() +
+  geom_line(aes(x = as.numeric(generation), recognition, color = song)) +
+  scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
+  theme(legend.position = "bottom", 
+        legend.direction = "vertical", 
+        plot.title = element_text(hjust = 0.5)) +
+  guides(color = guide_legend(ncol=2)) +
+  labs(x = "Age in year that song was released",
+       y = "% of people who know song",
+       title = "Top 5 and Bottom 5 Songs Currently Recognized",
+       color = "Artist/Song")
 ```
 
 This graph is showing what the current top 5 and bottom 5 songs from the 90s.
 It isn't surprising that the lowest songs started low and the highest songs started high.
 One interesting observation is that the high songs are more recent (indicated by the lack of data from people that were born more than 2-3 years after the release).
 
-### A graph of the top-5 songs that were popular in the 90's but are rarely heard after that
+### (3) A graph of the top-5 songs that were popular in the 90's but are rarely heard after that
 
 ```{r}
 # Get the average for each year and store to a named vector
 avgs <- unlist(summarize_at(rec,
-                          vars(`-13`:`10`),
-                          ~ mean(., na.rm = TRUE))[1,])
+                            vars(`-13`:`10`),
+                            ~ mean(., na.rm = TRUE))[1,])
 
 # Determine the top 5 originally but not currently popular songs
 #  based on their "distance" from the trendline
@@ -183,47 +205,52 @@ avgs <- unlist(summarize_at(rec,
 # A positive distance means it did better than average overall,
 #  while a negative distance means it did worse than average overall
 low_songs <- rec %>%
-    filter(`-13` >= .8) %>%
-    pivot_longer(`-13`:`10`,
-                 names_to = "generation", values_to = "recognition") %>%
-    transmute(song = artist_song, 
-              generation = generation, 
-              recognition = recognition * 100) %>%
-    filter(!is.na(recognition)) %>%
-      # Find the distance from the trendline for each data point
-    mutate(diff = recognition - avgs[as.character(generation)]) %>%   
-    group_by(song) %>%
-      # Sum the distances to get the overall "distance" from the trendline
-    summarize(diff.from.trend = sum(diff)) %>%
-    arrange(desc(diff.from.trend)) %>%
-    tail(5) %>%
-    pull(song)
+  filter(`-13` >= .8) %>%
+  pivot_longer(`-13`:`10`,
+               names_to = "generation", 
+               values_to = "recognition") %>%
+  transmute(song = artist_song, 
+            generation = generation, 
+            recognition = recognition * 100) %>%
+  filter(!is.na(recognition)) %>%
+  # Find the distance from the trendline for each data point
+  mutate(diff = recognition - avgs[as.character(generation)]) %>%   
+  group_by(song) %>%
+  # Sum the distances to get the overall "distance" from the trendline
+  summarize(diff.from.trend = sum(diff)) %>%
+  arrange(desc(diff.from.trend)) %>%
+  tail(5) %>%
+  pull(song)
 
 # Create the chart for the songs found above
 rec %>%
-    filter(artist_song %in% low_songs) %>%
-    pivot_longer(`-13`:`10`,
-                 names_to = "generation", values_to = "recognition") %>%
-    transmute(song = artist_song, 
-              generation = generation,
-              recognition = recognition * 100) %>%
-    filter(!is.na(recognition)) %>%
-    ggplot() +
-    geom_line(aes(x = as.numeric(generation), recognition, color = song)) +
-    scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
-    theme(legend.position = "bottom", 
-          legend.direction = "vertical",
-          plot.title = element_text(hjust = 0.5)) +
-    guides(color = guide_legend(ncol=2)) +
-    labs(x = "Age in year that song was released",
-         y = "% of people who know song",
-         title = "Top 5 Songs That Died Out Quickly",
-         color = "Artist/Song")
+  filter(artist_song %in% low_songs) %>%
+  pivot_longer(`-13`:`10`,
+               names_to = "generation",
+               values_to = "recognition") %>%
+  transmute(song = artist_song, 
+            generation = generation,
+            recognition = recognition * 100) %>%
+  filter(!is.na(recognition)) %>%
+  ggplot() +
+  geom_line(aes(x = as.numeric(generation), recognition, color = song)) +
+  scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
+  theme(legend.position = "bottom", 
+        legend.direction = "vertical",
+        plot.title = element_text(hjust = 0.5)) +
+  guides(color = guide_legend(ncol=2)) +
+  labs(x = "Age in year that song was released",
+       y = "% of people who know song",
+       title = "Top 5 Songs That Died Out Quickly",
+       color = "Artist/Song")
 ```
 
-One thing to note 
+There is a clear plummet in the songs' popularity over the years.
+This makes sense because after starting so well they have to do really poorly to make up for their prior good performance.
+One thing to note is that if the threshold for a "popular" song is shifted, i.e. from 80% to 85%, the makeup of the songs selected will change.
+This is because a song that starts off worse has a better shot at being far away from the trendline overall.
 
-### A graph/table describing the change in recognition across different generations
+### (4) A graph/table describing the change in recognition across different generations
 
 ```{r}
 knitr::kable(head(arrange(generation.rec.data, 
@@ -232,33 +259,51 @@ knitr::kable(head(arrange(generation.rec.data,
              col.names = c("Artist/Song", "Millenial", "Gen Z"))
 ```
 
-## Original question
+This table is a top 50 ranking of top 90's songs based on Gen Z recognition rank.
+It is interesting to note which songs have a large gap between Millenial and Gen Z recognition rate.
+These songs would have been very popular back when they came out, but have lost their popularity.
+The few songs that are both recognized by almost all Millenials and Gen Z are the songs that will live on.
+The higher the recognition rate of songs by Gen Z, the more likely they will continue to define the 90's music canon.
 
-We want to know how recognized songs are today that were only recognized by less than 50% of people that were 13-15 years old at the time of release. Do some of these songs gain popularity or do most die out?
+## Our question
 
-```{r}
+We want to know how recognized songs are today that were only recognized by less than 50% of people that were 13-15 years old at the time of release.
+Do some of these songs gain popularity or do most die out?
+
+```{r, message = FALSE}
 low_rec_at_release <- rec %>%
-    filter(`-13` <= .5) %>%
-    pivot_longer(`-13`:`10`,
-                 names_to = "generation", values_to = "recognition") %>%
-    transmute(song = artist_song, generation = generation, recognition = recognition * 100) %>%
-    filter(!is.na(recognition))
+  filter(`-13` <= .5) %>%
+  pivot_longer(`-13`:`10`,
+               names_to = "generation", 
+               values_to = "recognition") %>%
+  transmute(song = artist_song, 
+            generation = generation,
+            recognition = recognition * 100) %>%
+  filter(!is.na(recognition))
 
 ggplot(low_rec_at_release) +
-geom_line(aes(x = as.numeric(generation), recognition, color = song)) +
-geom_smooth(aes(as.numeric(generation), recognition), color = "black") +
-scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
-theme(legend.position = "none") +
-labs(x = "Age in year that song was released",
-     y = "% of people who know song")
+  geom_line(aes(x = as.numeric(generation), recognition, color = song)) +
+  geom_smooth(aes(as.numeric(generation), recognition), color = "black") +
+  scale_x_continuous(breaks = seq(-13, 10, by = 1), labels = flip_sign) +
+  theme(legend.position = "none") +
+  labs(x = "Age in year that song was released",
+       y = "% of people who know song",
+       title = "Less Popular Top 90's Songs Recogntion with Age")
 
 low_rec_at_release %>%
-    mutate(diff = recognition - avgs[as.character(generation)]) %>%
-    group_by(song) %>%
-    summarize(diff.from.trend = sum(diff)) %>%
-    arrange(desc(diff.from.trend)) %>%
-    head(5) %>%
-    pull(song)
+  mutate(diff = recognition - avgs[as.character(generation)]) %>%
+  group_by(song) %>%
+  summarize(diff.from.trend = sum(diff)) %>%
+  arrange(desc(diff.from.trend)) %>%
+  head(5) %>%
+  pull(song) %>%
+  knitr::kable(col.names = c("Artist/Song"))
 ```
 
-Most of these songs appear to die out and not be recognized today. We can tell this by the decreasing slope of the trend line for these songs that we recognized by less than 50% of 13-15 year olds when the song was released. This isn't too surprising of a result. It is interesting to see which of these songs are most recognized today though. The top 2 songs are by Notorious B.I.G. and the next 2 most recognized are by Whitney Houston. It makes sense that these artists are at the top since they are still popular today and have many fans that could recognize some of their least popular songs.
+Most of these songs appear to die out and not be recognized today.
+We can tell this by the decreasing slope of the trend line for these songs that we recognized by less than 50% of 13-15 year olds when the song was released.
+Most of these songs are only recognized by 10% of Gen Z.
+This isn't too surprising of a result.
+It is interesting to see which of these songs are most recognized today though.
+The top 2 songs are by The Notorious B.I.G. and the next 2 most recognized are by Whitney Houston.
+It makes sense that these artists are at the top since they are still popular today and have many fans that could recognize some of their least popular songs.
