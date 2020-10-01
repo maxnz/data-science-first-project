@@ -143,7 +143,7 @@ rec %>%
        title = "Most Recognized Top 90's Songs Recognition Decay with Age")
 ```
 
-This plot is all the top 90's songs that were recognized by at least 90% of 13-15 year old at the time of the song's release.
+This plot is all the top 90's songs that were recognized by at least 90% of those who were 13-15 years old at the time of the song's release.
 Once again, there is a downward trend, but the slope is less steep than the previous plot.
 This reveals that the songs that almost all Millenials recognize are much more likely to be recognized by Gen Z. 
 
@@ -185,7 +185,7 @@ rec %>%
        color = "Artist/Song")
 ```
 
-This graph is showing what the current top 5 and bottom 5 songs from the 90s.
+This graph is showing the current top 5 and bottom 5 songs from the 90s.
 It isn't surprising that the lowest songs started low and the highest songs started high.
 One interesting observation is that the high songs are more recent (indicated by the lack of data from people that were born more than 2-3 years after the release).
 
